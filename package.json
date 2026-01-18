@@ -1,0 +1,71 @@
+{
+  "name": "secure-xfer",
+  "version": "1.1.0",
+  "main": "dist-electron/main.js",
+  "description": "Secure local file transfer app",
+  "author": "Antigravity",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && electron-builder",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
+  },
+  "dependencies": {
+    "axios": "^1.6.2",
+    "express": "^4.18.2",
+    "framer-motion": "^10.16.4",
+    "multicast-dns": "^7.2.5",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "selfsigned": "^5.5.0",
+    "socket.io": "^4.7.2",
+    "socket.io-client": "^4.7.2",
+    "uuid": "^9.0.1",
+    "ws": "^8.19.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.43.1",
+    "@types/express": "^4.17.25",
+    "@types/multicast-dns": "^7.2.2",
+    "@types/node": "^20.19.29",
+    "@types/react": "^18.3.27",
+    "@types/react-dom": "^18.3.7",
+    "@types/selfsigned": "^2.0.4",
+    "@types/socket.io": "^3.0.2",
+    "@types/socket.io-client": "^3.0.0",
+    "@types/uuid": "^9.0.8",
+    "@types/ws": "^8.18.1",
+    "@vitejs/plugin-react": "^4.2.0",
+    "electron": "^27.1.0",
+    "electron-builder": "^24.9.1",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.0",
+    "vite-plugin-electron": "^0.15.4",
+    "vite-plugin-electron-renderer": "^0.14.5",
+    "vitest": "^4.0.17"
+  },
+  "build": {
+    "appId": "com.antigravity.securexfer",
+    "productName": "SecureXfer",
+    "icon": "public/logo.png",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist",
+      "dist-electron",
+      "public",
+      "package.json"
+    ],
+    "win": {
+      "target": "portable",
+      "icon": "public/logo.png"
+    },
+    "mac": {
+      "icon": "public/logo.png"
+    }
+  }
+}
