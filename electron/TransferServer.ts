@@ -140,7 +140,11 @@ export class TransferServer {
         })
     }
 
-    public getPort() {
-        return this.port
+    public async stop(): Promise<void> {
+        return new Promise((resolve) => {
+            this.io.close(() => {
+                this.server.close(() => resolve())
+            })
+        })
     }
 }

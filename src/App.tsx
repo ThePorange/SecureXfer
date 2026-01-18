@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { io, Socket } from 'socket.io-client'
 import logo from './assets/logo.png'
+import pkg from '../package.json'
 
 interface Peer {
     id: string
@@ -443,7 +444,7 @@ export default function App() {
                                                 initial={{ opacity: 0, x: 20 }}
                                                 animate={{ opacity: 1, x: 0 }}
                                                 className={`glass-panel p-4 border-l-4 ${activity.error ? 'border-l-red-500' :
-                                                        activity.isCompleted ? 'border-l-green-500' : 'border-l-blue-500'
+                                                    activity.isCompleted ? 'border-l-green-500' : 'border-l-blue-500'
                                                     }`}
                                             >
                                                 <div className="flex justify-between items-start mb-2 gap-2">
@@ -526,7 +527,7 @@ export default function App() {
                     </div>
                 </div>
                 <div className="status-version">
-                    SecureXfer 1.0.5
+                    SecureXfer {pkg.version}
                 </div>
             </footer>
         </div>

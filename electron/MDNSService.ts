@@ -124,4 +124,8 @@ export class MDNSService {
         }
         return '127.0.0.1'
     }
+
+    public destroy() {
+        this.mDNS.destroy()
+    }
 }

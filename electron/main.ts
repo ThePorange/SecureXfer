@@ -59,6 +59,7 @@ let mdnsService: MDNSService
 let transferServer: TransferServer
 let myFingerprint: string
 let myKeys: { key: string, cert: string }
+let discoveryInterval: NodeJS.Timeout | null = null
 
 async function generateCerts() {
     try {
@@ -106,9 +107,11 @@ async function createWindow() {
         const port = await transferServer.start()
         mdnsService = new MDNSService(port, myFingerprint)
 
-        setInterval(() => {
-            mdnsService.discover()
-            win?.webContents.send('peer-list', mdnsService.getPeers())
+        discoveryInterval = setInterval(() => {
+            if (win && !win.isDestroyed()) {
+                mdnsService.discover()
+                win.webContents.send('peer-list', mdnsService.getPeers())
+            }
         }, 3000)
 
         if (VITE_DEV_SERVER_URL) {
@@ -125,6 +128,13 @@ async function createWindow() {
 
             win.loadFile(indexPath)
         }
+        win.on('closed', () => {
+            if (discoveryInterval) {
+                clearInterval(discoveryInterval)
+                discoveryInterval = null
+            }
+            win = null
+        })
     } catch (err: any) {
         if (dialog) dialog.showErrorBox('Startup Error', `The application failed to start: ${err.message}`)
     }
@@ -146,6 +156,12 @@ if (app) {
         if (BrowserWindow && BrowserWindow.getAllWindows().length === 0) {
             createWindow()
         }
+    })
+
+    app.on('will-quit', async () => {
+        if (discoveryInterval) clearInterval(discoveryInterval)
+        if (mdnsService) mdnsService.destroy()
+        if (transferServer) await transferServer.stop()
     })
 
     app.whenReady().then(createWindow).catch((e: any) => console.error('App ready failed:', e))
