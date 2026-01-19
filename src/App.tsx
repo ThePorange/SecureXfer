@@ -401,7 +401,7 @@ export default function App() {
                                         </div>
                                         <button
                                             onClick={() => setSelectedFiles([])}
-                                            className="text-xs text-red-500 hover:text-red-400 font-bold uppercase transition-colors"
+                                            className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-md border border-slate-700 transition-all"
                                         >
                                             Clear All
                                         </button>
@@ -450,7 +450,7 @@ export default function App() {
                                         <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Transfer Activity</span>
                                         <button
                                             onClick={() => setActivities({})}
-                                            className="text-[10px] text-slate-500 hover:text-white font-bold uppercase transition-colors"
+                                            className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white text-[9px] font-bold rounded-md border border-slate-700 transition-all"
                                         >
                                             Clear History
                                         </button>

@@ -83,11 +83,11 @@ body {
 
 /* Components */
 .title-bar {
-  height: 48px;
+  height: 64px;
   -webkit-app-region: drag;
   display: flex;
-  align-items: center;
-  padding: 0 20px;
+  align-items: flex-end;
+  padding: 0 20px 14px;
   font-size: 0.85rem;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -599,12 +599,19 @@ body {
 
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .glass-panel.drag-active {
-    border-color: #3b82f6 !important;
-    background: rgba(59, 130, 246, 0.05) !important;
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
+  border-color: #3b82f6 !important;
+  background: rgba(59, 130, 246, 0.05) !important;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
 }
