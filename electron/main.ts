@@ -27,7 +27,7 @@ try {
     electron = {};
 }
 
-const { app, BrowserWindow, ipcMain, dialog, shell } = electron;
+const { app, BrowserWindow, ipcMain, dialog, shell, clipboard } = electron;
 
 import { MDNSService } from './MDNSService'
 import { TransferServer } from './TransferServer'
@@ -233,6 +233,48 @@ if (ipcMain) {
         })
         if (result.canceled || result.filePaths.length === 0) return []
         return processPaths(result.filePaths)
+    })
+
+    ipcMain.handle('get-clipboard-content', async () => {
+        if (!clipboard) return null
+
+        const now = new Date()
+        const timestamp = now.getFullYear() +
+            String(now.getMonth() + 1).padStart(2, '0') +
+            String(now.getDate()).padStart(2, '0') +
+            String(now.getHours()).padStart(2, '0') +
+            String(now.getMinutes()).padStart(2, '0') +
+            String(now.getSeconds()).padStart(2, '0')
+
+        const text = clipboard.readText()
+        if (text) {
+            const name = `clipboard_text_${timestamp}.txt`
+            const tempPath = path.join(app.getPath('temp'), `cb_${Date.now()}.txt`)
+            fs.writeFileSync(tempPath, text)
+            const stats = fs.statSync(tempPath)
+            return {
+                path: tempPath,
+                name: name,
+                size: stats.size,
+                relativePath: name
+            }
+        }
+
+        const image = clipboard.readImage()
+        if (image && !image.isEmpty()) {
+            const name = `clipboard_image_${timestamp}.png`
+            const tempPath = path.join(app.getPath('temp'), `cb_${Date.now()}.png`)
+            fs.writeFileSync(tempPath, image.toPNG())
+            const stats = fs.statSync(tempPath)
+            return {
+                path: tempPath,
+                name: name,
+                size: stats.size,
+                relativePath: name
+            }
+        }
+
+        return null
     })
 
     ipcMain.handle('process-dropped-paths', async (_: any, paths: string[]) => {

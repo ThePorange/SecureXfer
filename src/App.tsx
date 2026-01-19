@@ -143,6 +143,15 @@ export default function App() {
         }
     }
 
+    const handleSendClipboard = async () => {
+        const file: SelectedFile | null = await window.ipcRenderer.invoke('get-clipboard-content')
+        if (file) {
+            setSelectedFiles(prev => [...prev, file])
+        } else {
+            alert('Clipboard is empty or contains unsupported format (plain text or images only).')
+        }
+    }
+
     const handleSend = async () => {
         if (!selectedPeer || selectedFiles.length === 0) return
 
@@ -354,11 +363,20 @@ export default function App() {
                                     </button>
                                     <button
                                         onClick={handleSelectFolder}
-                                        className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white transition-colors flex items-center"
+                                        className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white transition-colors flex items-center border-r border-slate-700"
                                         title="Add Folder"
                                     >
                                         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                                        </svg>
+                                    </button>
+                                    <button
+                                        onClick={handleSendClipboard}
+                                        className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white transition-colors flex items-center"
+                                        title="Paste from Clipboard"
+                                    >
+                                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                         </svg>
                                     </button>
                                 </div>
