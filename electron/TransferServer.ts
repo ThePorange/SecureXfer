@@ -4,6 +4,7 @@ import https from 'https'
 import fs from 'fs'
 import path from 'path'
 import { app, BrowserWindow } from 'electron'
+import { logger } from './logger'
 
 export interface TransferRequest {
     id: string
@@ -94,6 +95,7 @@ export class TransferServer {
             let pendingTransferId: string | null = null
 
             socket.on('request-transfer', (data: TransferRequest) => {
+                logger.info('Incoming transfer request via socket:', data)
                 pendingTransferId = data.id
                 this.win?.webContents.send('incoming-transfer', data)
                 this.activeDecisions.set(data.id, (allowed) => {
@@ -134,6 +136,7 @@ export class TransferServer {
                 const addr = this.server.address()
                 if (typeof addr === 'object' && addr !== null) {
                     this.port = addr.port
+                    logger.info(`Transfer server listening on 0.0.0.0:${this.port}`)
                     resolve(this.port)
                 }
             })

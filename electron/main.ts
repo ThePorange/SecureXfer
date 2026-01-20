@@ -31,6 +31,8 @@ const { app, BrowserWindow, ipcMain, dialog, shell, clipboard } = electron;
 
 import { MDNSService } from './MDNSService'
 import { TransferServer } from './TransferServer'
+import { logger } from './logger'
+import os from 'os'
 
 // Disable hardware acceleration and ignore certificate errors
 if (app) {
@@ -82,7 +84,19 @@ async function createWindow() {
     }
 
     try {
+        logger.info('Creating window...')
+        logger.info('System Info:', {
+            platform: process.platform,
+            arch: process.arch,
+            version: os.release(),
+            hostname: os.hostname(),
+            cpus: os.cpus().map(c => c.model),
+            memory: Math.round(os.totalmem() / 1024 / 1024 / 1024) + 'GB',
+            interfaces: os.networkInterfaces()
+        })
+
         await generateCerts()
+        logger.info('Generated certificate fingerprint:', myFingerprint)
 
         const iconPath = path.join(process.env.VITE_PUBLIC || '', 'logo.png')
 
@@ -105,7 +119,10 @@ async function createWindow() {
         transferServer = new TransferServer(myKeys.key, myKeys.cert)
         transferServer.setWindow(win)
         const port = await transferServer.start()
+        logger.info(`Transfer server started on port ${port}`)
+
         mdnsService = new MDNSService(port, myFingerprint)
+        logger.info('mDNS service initialized')
 
         discoveryInterval = setInterval(() => {
             if (win && !win.isDestroyed()) {
@@ -236,6 +253,7 @@ if (ipcMain) {
     })
 
     ipcMain.handle('get-clipboard-content', async () => {
+        logger.info('Handling get-clipboard-content request')
         if (!clipboard) return null
 
         const now = new Date()

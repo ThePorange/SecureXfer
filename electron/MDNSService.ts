@@ -1,6 +1,7 @@
 import mdns from 'multicast-dns'
 import crypto from 'crypto'
 import os from 'os'
+import { logger } from './logger'
 
 export interface Peer {
     id: string
@@ -27,19 +28,22 @@ export class MDNSService {
     }
 
     private setupListeners() {
-        this.mDNS.on('query', (query) => {
-            const isMyService = query.questions.some(q => q.name === this.serviceName)
+        this.mDNS.on('query', (query: any) => {
+            logger.info('mDNS query received:', query)
+            const isMyService = (query.questions as any[]).some(q => q.name === this.serviceName)
             if (isMyService) {
+                logger.info('Received discovery query for SecureXfer service, announcing...')
                 this.announce()
             }
         })
 
-        this.mDNS.on('response', (response) => {
-            const ptr = response.answers.find(a => a.name === this.serviceName && a.type === 'PTR')
+        this.mDNS.on('response', (response: any) => {
+            logger.info('mDNS response received from network')
+            const ptr = (response.answers as any[]).find(a => a.name === this.serviceName && a.type === 'PTR')
             if (ptr) {
-                const txt = response.additionals.find(a => a.type === 'TXT')
-                const srv = response.additionals.find(a => a.type === 'SRV')
-                const aRecord = response.additionals.find(a => a.type === 'A')
+                const txt = (response.additionals as any[]).find(a => a.type === 'TXT')
+                const srv = (response.additionals as any[]).find(a => a.type === 'SRV')
+                const aRecord = (response.additionals as any[]).find(a => a.type === 'A')
 
                 if (txt && srv && aRecord) {
                     const idData = txt.data.find((d: any) => d.toString().startsWith('id='))
@@ -52,6 +56,7 @@ export class MDNSService {
                         const fingerprint = fpData.toString().split('=')[1]
 
                         if (id !== this.myId) {
+                            logger.info('Peer found:', { id, name, ip: aRecord.data, port: srv.data.port })
                             this.peers.set(id, {
                                 id,
                                 name,
@@ -68,7 +73,7 @@ export class MDNSService {
     }
 
     public announce() {
-        this.mDNS.respond({
+        (this.mDNS as any).respond({
             answers: [{
                 name: this.serviceName,
                 type: 'PTR',
@@ -91,7 +96,7 @@ export class MDNSService {
                     data: this.getLocalIp()
                 }
             ]
-        })
+        } as any)
     }
 
     public discover() {
@@ -115,14 +120,29 @@ export class MDNSService {
 
     private getLocalIp(): string {
         const interfaces = os.networkInterfaces()
+        logger.info('Detecting local network interfaces...')
+
+        // Priority interfaces
+        const targetInterfaces = ['Wi-Fi', 'Ethernet', 'WLAN', 'WiFi', 'eth0', 'wlan0']
+
+        let fallbackIp = '127.0.0.1'
+
         for (const name of Object.keys(interfaces)) {
+            const isPriority = targetInterfaces.some(t => name.toLowerCase().includes(t.toLowerCase()))
+
             for (const iface of interfaces[name]!) {
                 if (iface.family === 'IPv4' && !iface.internal) {
-                    return iface.address
+                    logger.info(`Interface found: ${name} (${iface.address}) ${isPriority ? '[PRIORITY]' : ''}`)
+                    if (isPriority) {
+                        return iface.address
+                    }
+                    fallbackIp = iface.address
                 }
             }
         }
-        return '127.0.0.1'
+
+        logger.warn(`Using fallback IP: ${fallbackIp}`)
+        return fallbackIp
     }
 
     public destroy() {
