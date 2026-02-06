@@ -56,11 +56,25 @@ export class MDNSService {
                         const fingerprint = fpData.toString().split('=')[1]
 
                         if (id !== this.myId) {
-                            logger.info('Peer found:', { id, name, ip: aRecord.data, port: srv.data.port })
+                            // Create temp peer to check for duplicates
+                            const newPeerIp = aRecord.data
+
+                            // Check for existing peer with same IP but different ID (likely app restart)
+                            for (const [existingId, existingPeer] of this.peers.entries()) {
+                                if (existingPeer.ip === newPeerIp && existingId !== id) {
+                                    logger.info(`Removing duplicate peer for IP ${newPeerIp} (Old ID: ${existingId}, New ID: ${id})`)
+                                    this.peers.delete(existingId)
+                                }
+                            }
+
+                            if (!this.peers.has(id)) {
+                                logger.info('Peer found:', { id, name, ip: newPeerIp, port: srv.data.port })
+                            }
+
                             this.peers.set(id, {
                                 id,
                                 name,
-                                ip: aRecord.data,
+                                ip: newPeerIp,
                                 port: srv.data.port,
                                 fingerprint,
                                 lastSeen: Date.now()
